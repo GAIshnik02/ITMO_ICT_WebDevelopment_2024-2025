@@ -1,23 +1,26 @@
 import socket
 
+
 def run():
-    #Создаем сокет для клиента UDP
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(('localhost', 8080))
 
     try:
-        #Подключаемся к сокету
-        client_socket.connect(('localhost', 8080))
+        base = float(input("Введите основание параллелограмма: "))
+        height = float(input("Введите высоту параллелограмма: "))
 
-        #Отправляем сообщение
-        client_socket.sendall(b'Hello, server')
+        data = f"{base},{height}"
+        client_socket.send(data.encode('utf-8'))
 
-        #Получаем ответ
-        response = client_socket.recv(1024)
-        print(f"Response from server: {response.decode('utf-8')}")
+        result = client_socket.recv(1024).decode('utf-8')
+        print(f"Площадь параллелограмма: {result}")
+
     except Exception as e:
-        print(e)
+        print(f"Ошибка: {e}")
+
     finally:
         client_socket.close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()

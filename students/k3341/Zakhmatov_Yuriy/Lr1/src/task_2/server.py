@@ -1,35 +1,51 @@
 import socket
 
+def calculate(base, height):
+    return base * height
 
 def run():
-    # Создание UDP сокета
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Создание TCP сокета
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # Задаем параметры
     server_address = ("localhost", 8080)
     server_socket.bind(server_address)
+    server_socket.listen(1)
 
     print(f"Server started on {server_address[0]}:{server_address[1]}")
     print("Awaiting connection...")
 
-    try:
-        while True:
-            # Получаем запрос клиента
+    while True:
+        # Принимаем подключение клиента
+        client_socket, addr = server_socket.accept()
 
-            data, client_address = server_socket.recvfrom(1024)
-            message = data.decode("utf-8")
+        print(f"Connected by: {addr}")
 
-            print(f"Received message from {client_address} : {message}")
+        try:
+            # Получаем данные от клиента
+            data = client_socket.recv(1024).decode("utf-8")
+            print(f"Received data: {data}")
 
-            # отправляем ответ клиенту
-            response = "Hello, client"
-            server_socket.sendto(response.encode("utf-8"), client_address)
-            print(f"Sent response to {client_address}")
-    except Exception:
-        print("\nServer shutting down...")
-    finally:
-        server_socket.close()
+            # Преобразуем данные
+            base, height = map(float, data.split(","))
 
+            # Считаем
+            area = calculate(base,height)
+
+            # Отправляем данные
+            client_socket.send(str(area).encode("utf-8"))
+
+            print(f"Sent result to client: {area}")
+
+
+
+        except Exception as e:
+            error_msg = f"Error: {e}"
+            client_socket.send(error_msg.encode("utf-8"))
+            print(error_msg)
+
+        finally:
+            client_socket.close()
 
 if __name__ == "__main__":
     run()
